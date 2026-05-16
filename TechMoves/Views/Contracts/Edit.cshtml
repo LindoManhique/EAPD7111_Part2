@@ -1,0 +1,73 @@
+﻿@model TechMoves.Models.Contract
+
+@{
+    ViewData["Title"] = "Edit Contract";
+}
+
+<h1>Edit Contract</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form asp-action="Edit" enctype="multipart/form-data">
+
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-group mb-3">
+                <label asp-for="ClientId"></label>
+                <select asp-for="ClientId" class="form-control" asp-items="ViewBag.ClientId"></select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="StartDate"></label>
+                <input asp-for="StartDate" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EndDate"></label>
+                <input asp-for="EndDate" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Status"></label>
+                <input asp-for="Status" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ServiceLevel"></label>
+                <input asp-for="ServiceLevel" class="form-control" />
+            </div>
+
+            <!-- CURRENT FILE DISPLAY -->
+            <div class="form-group mb-3">
+                <label>Current Agreement</label><br />
+
+                @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
+                {
+                    <a href="@Model.AgreementFilePath" target="_blank">
+                        View Current PDF
+                    </a>
+                }
+                else
+                {
+                    <span>No file uploaded</span>
+                }
+            </div>
+
+            <!-- NEW FILE UPLOAD -->
+            <div class="form-group mb-3">
+                <label>Replace Agreement (PDF only)</label>
+                <input type="file" name="file" class="form-control" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-secondary">Back</a>
+
+        </form>
+
+    </div>
+</div>
