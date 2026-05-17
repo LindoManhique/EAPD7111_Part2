@@ -50,7 +50,12 @@
 
                 <div class="col-md-6 mb-3">
                     <label>Service Level</label>
-                    <input asp-for="ServiceLevel" class="form-control" />
+                    <select asp-for="ServiceLevel" class="form-control">
+                        <option value="">-- Select Level --</option>
+                        <option>Gold</option>
+                        <option>Silver</option>
+                        <option>Bronze</option>
+                    </select>
                 </div>
 
             </div>

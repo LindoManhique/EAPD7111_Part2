@@ -9,7 +9,7 @@
     <div class="card shadow p-4">
 
         <h2>Edit Contract</h2>
-        <p class="text-muted">Update contract details or replace agreement.</p>
+        <p class="text-muted">Update contract details or replace signed agreement.</p>
 
         <form asp-action="Edit" enctype="multipart/form-data">
 
@@ -38,12 +38,22 @@
 
                 <div class="col-md-6 mb-3">
                     <label>Status</label>
-                    <input asp-for="Status" class="form-control" />
+                    <select asp-for="Status" class="form-control">
+                        <option>Draft</option>
+                        <option>Active</option>
+                        <option>Expired</option>
+                        <option>On Hold</option>
+                    </select>
                 </div>
 
                 <div class="col-md-6 mb-3">
                     <label>Service Level</label>
-                    <input asp-for="ServiceLevel" class="form-control" />
+                    <select asp-for="ServiceLevel" class="form-control">
+                        <option value="">-- Select Level --</option>
+                        <option>Gold</option>
+                        <option>Silver</option>
+                        <option>Bronze</option>
+                    </select>
                 </div>
 
             </div>
@@ -53,8 +63,8 @@
 
                 @if (!string.IsNullOrEmpty(Model.AgreementFilePath))
                 {
-                    <a class="btn btn-success btn-sm" href="@Model.AgreementFilePath" target="_blank">
-                        View PDF
+                    <a class="btn btn-sm btn-success" href="@Model.AgreementFilePath" target="_blank">
+                        View Current PDF
                     </a>
                 }
                 else
