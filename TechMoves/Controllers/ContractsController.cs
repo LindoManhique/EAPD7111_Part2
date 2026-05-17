@@ -20,7 +20,7 @@ namespace TechMoves.Controllers
             _context = context;
         }
 
-        // 🔥 INDEX (WITH LINQ FILTERS - HIGH MARKS)
+        //  INDEX (FILTERS INCLUDED)
         public async Task<IActionResult> Index(string status, DateTime? startDate, DateTime? endDate)
         {
             var contracts = _context.Contracts
@@ -59,14 +59,14 @@ namespace TechMoves.Controllers
             return View(contract);
         }
 
-        // CREATE GET
+        // CREATE (GET)
         public IActionResult Create()
         {
             ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name");
             return View();
         }
 
-        // CREATE POST (UPLOAD PDF)
+        // CREATE (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Contract contract, IFormFile file)
@@ -77,13 +77,14 @@ namespace TechMoves.Controllers
                 return View(contract);
             }
 
+            //  FILE VALIDATION
             if (file != null && file.Length > 0)
             {
                 var ext = Path.GetExtension(file.FileName).ToLower();
 
                 if (ext != ".pdf")
                 {
-                    ModelState.AddModelError("", "Only PDF files allowed.");
+                    ModelState.AddModelError("file", "Only PDF files allowed.");
                     ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
                     return View(contract);
                 }
@@ -94,9 +95,9 @@ namespace TechMoves.Controllers
                     Directory.CreateDirectory(folder);
 
                 var fileName = Guid.NewGuid() + ".pdf";
-                var fullPath = Path.Combine(folder, fileName);
+                var path = Path.Combine(folder, fileName);
 
-                using (var stream = new FileStream(fullPath, FileMode.Create))
+                using (var stream = new FileStream(path, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
@@ -110,7 +111,79 @@ namespace TechMoves.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // 🔥 DOWNLOAD PDF
+        // EDIT (GET)
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var contract = await _context.Contracts.FindAsync(id);
+
+            if (contract == null) return NotFound();
+
+            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
+
+            return View(contract);
+        }
+
+        // EDIT (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Contract contract, IFormFile file)
+        {
+            if (id != contract.Id) return NotFound();
+
+            var existing = await _context.Contracts.FindAsync(id);
+
+            if (existing == null) return NotFound();
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
+                return View(contract);
+            }
+
+            // UPDATE FIELDS
+            existing.ClientId = contract.ClientId;
+            existing.StartDate = contract.StartDate;
+            existing.EndDate = contract.EndDate;
+            existing.Status = contract.Status;
+            existing.ServiceLevel = contract.ServiceLevel;
+
+            //  FILE VALIDATION + REPLACE
+            if (file != null && file.Length > 0)
+            {
+                var ext = Path.GetExtension(file.FileName).ToLower();
+
+                if (ext != ".pdf")
+                {
+                    ModelState.AddModelError("file", "Only PDF files allowed.");
+                    ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
+                    return View(contract);
+                }
+
+                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/contracts");
+
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                var fileName = Guid.NewGuid() + ".pdf";
+                var path = Path.Combine(folder, fileName);
+
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                existing.AgreementFilePath = "/uploads/contracts/" + fileName;
+            }
+
+            _context.Update(existing);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // DOWNLOAD PDF
         public async Task<IActionResult> Download(string fileName)
         {
             if (string.IsNullOrEmpty(fileName))
@@ -130,76 +203,7 @@ namespace TechMoves.Controllers
             return File(bytes, "application/pdf", fileName);
         }
 
-        // EDIT GET
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var contract = await _context.Contracts.FindAsync(id);
-            if (contract == null) return NotFound();
-
-            ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
-            return View(contract);
-        }
-
-        // EDIT POST (WITH FILE REPLACEMENT)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Contract contract, IFormFile file)
-        {
-            if (id != contract.Id) return NotFound();
-
-            if (!ModelState.IsValid)
-            {
-                ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
-                return View(contract);
-            }
-
-            var existing = await _context.Contracts.FindAsync(id);
-
-            if (existing == null)
-                return NotFound();
-
-            existing.ClientId = contract.ClientId;
-            existing.StartDate = contract.StartDate;
-            existing.EndDate = contract.EndDate;
-            existing.Status = contract.Status;
-            existing.ServiceLevel = contract.ServiceLevel;
-
-            if (file != null && file.Length > 0)
-            {
-                var ext = Path.GetExtension(file.FileName).ToLower();
-
-                if (ext != ".pdf")
-                {
-                    ModelState.AddModelError("", "Only PDF files allowed.");
-                    ViewData["ClientId"] = new SelectList(_context.Clients, "Id", "Name", contract.ClientId);
-                    return View(contract);
-                }
-
-                var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/contracts");
-
-                if (!Directory.Exists(folder))
-                    Directory.CreateDirectory(folder);
-
-                var fileName = Guid.NewGuid() + ".pdf";
-                var fullPath = Path.Combine(folder, fileName);
-
-                using (var stream = new FileStream(fullPath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                existing.AgreementFilePath = "/uploads/contracts/" + fileName;
-            }
-
-            _context.Update(existing);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // DELETE GET
+        // DELETE (GET)
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -213,7 +217,7 @@ namespace TechMoves.Controllers
             return View(contract);
         }
 
-        // DELETE POST
+        // DELETE (POST)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

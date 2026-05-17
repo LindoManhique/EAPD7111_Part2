@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using TechMoves.Data;
 using TechMoves.Interfaces;
 using TechMoves.Models;
-using TechMoves.Services;
 using TechMoves.ViewModels;
 
 namespace TechMoves.Controllers
@@ -27,11 +26,14 @@ namespace TechMoves.Controllers
             _currencyService = currencyService;
         }
 
-        // 🔥 INDEX (NOW WITH API + VIEWMODEL)
+        // =========================
+        // INDEX
+        // =========================
         public async Task<IActionResult> Index()
         {
             var data = await _context.ServiceRequests
                 .Include(s => s.Contract)
+                .ThenInclude(c => c.Client)
                 .ToListAsync();
 
             var rate = await _currencyService.GetUsdToZarRateAsync();
@@ -46,112 +48,199 @@ namespace TechMoves.Controllers
             return View(vm);
         }
 
+        // =========================
         // DETAILS
+        // =========================
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
             var serviceRequest = await _context.ServiceRequests
                 .Include(s => s.Contract)
+                .ThenInclude(c => c.Client)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (serviceRequest == null) return NotFound();
+            if (serviceRequest == null)
+                return NotFound();
 
             return View(serviceRequest);
         }
 
+        // =========================
         // CREATE (GET)
+        // =========================
         public IActionResult Create()
         {
-            ViewData["ContractId"] =
-                new SelectList(_context.Contracts, "Id", "Id");
+            ViewData["ContractId"] = new SelectList(
+                _context.Contracts.Include(c => c.Client)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        DisplayText = "Contract #" + c.Id + " - " + c.Client.Name
+                    }),
+                "Id",
+                "DisplayText"
+            );
 
             return View();
         }
 
+        // =========================
         // CREATE (POST)
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ServiceRequest serviceRequest)
         {
             if (!ModelState.IsValid)
             {
-                ViewData["ContractId"] =
-                    new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
+                ViewData["ContractId"] = new SelectList(
+                    _context.Contracts.Include(c => c.Client)
+                        .Select(c => new
+                        {
+                            c.Id,
+                            DisplayText = "Contract #" + c.Id + " - " + c.Client.Name
+                        }),
+                    "Id",
+                    "DisplayText",
+                    serviceRequest.ContractId
+                );
 
                 return View(serviceRequest);
             }
 
+            // LOAD CONTRACT
             var contract = await _context.Contracts
+                .Include(c => c.Client)
                 .FirstOrDefaultAsync(c => c.Id == serviceRequest.ContractId);
 
             if (contract == null)
                 return NotFound();
 
+            // BUSINESS RULE VALIDATION
             if (!_contractService.CanCreateServiceRequest(contract))
             {
-                ModelState.AddModelError("", "Contract is Expired or On Hold.");
+                ModelState.AddModelError(
+                    "",
+                    "Cannot create Service Request because contract is Expired or On Hold."
+                );
 
-                ViewData["ContractId"] =
-                    new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
+                ViewData["ContractId"] = new SelectList(
+                    _context.Contracts.Include(c => c.Client)
+                        .Select(c => new
+                        {
+                            c.Id,
+                            DisplayText = "Contract #" + c.Id + " - " + c.Client.Name
+                        }),
+                    "Id",
+                    "DisplayText",
+                    serviceRequest.ContractId
+                );
 
                 return View(serviceRequest);
             }
 
+            // SAVE REQUEST
             _context.Add(serviceRequest);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
 
-        // EDIT
+        // =========================
+        // EDIT (GET)
+        // =========================
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
             var serviceRequest = await _context.ServiceRequests.FindAsync(id);
-            if (serviceRequest == null) return NotFound();
 
-            ViewData["ContractId"] =
-                new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
+            if (serviceRequest == null)
+                return NotFound();
+
+            ViewData["ContractId"] = new SelectList(
+                _context.Contracts.Include(c => c.Client)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        DisplayText = "Contract #" + c.Id + " - " + c.Client.Name
+                    }),
+                "Id",
+                "DisplayText",
+                serviceRequest.ContractId
+            );
 
             return View(serviceRequest);
         }
 
+        // =========================
+        // EDIT (POST)
+        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ServiceRequest serviceRequest)
         {
-            if (id != serviceRequest.Id) return NotFound();
+            if (id != serviceRequest.Id)
+                return NotFound();
 
             if (!ModelState.IsValid)
             {
-                ViewData["ContractId"] =
-                    new SelectList(_context.Contracts, "Id", "Id", serviceRequest.ContractId);
+                ViewData["ContractId"] = new SelectList(
+                    _context.Contracts.Include(c => c.Client)
+                        .Select(c => new
+                        {
+                            c.Id,
+                            DisplayText = "Contract #" + c.Id + " - " + c.Client.Name
+                        }),
+                    "Id",
+                    "DisplayText",
+                    serviceRequest.ContractId
+                );
 
                 return View(serviceRequest);
             }
 
-            _context.Update(serviceRequest);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Update(serviceRequest);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ServiceRequestExists(serviceRequest.Id))
+                    return NotFound();
+                else
+                    throw;
+            }
 
             return RedirectToAction(nameof(Index));
         }
 
-        // DELETE
+        // =========================
+        // DELETE (GET)
+        // =========================
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
             var serviceRequest = await _context.ServiceRequests
                 .Include(s => s.Contract)
+                .ThenInclude(c => c.Client)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (serviceRequest == null) return NotFound();
+            if (serviceRequest == null)
+                return NotFound();
 
             return View(serviceRequest);
         }
 
+        // =========================
+        // DELETE (POST)
+        // =========================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -165,6 +254,14 @@ namespace TechMoves.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // =========================
+        // EXISTS CHECK
+        // =========================
+        private bool ServiceRequestExists(int id)
+        {
+            return _context.ServiceRequests.Any(e => e.Id == id);
         }
     }
 }

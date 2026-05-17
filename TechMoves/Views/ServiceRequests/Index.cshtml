@@ -4,54 +4,83 @@
     ViewData["Title"] = "Service Requests";
 }
 
-<h1>Service Requests</h1>
+<div class="container mt-4">
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
-</p>
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Contract</th>
-            <th>Description</th>
-            <th>Cost (USD)</th>
-            <th>Cost (ZAR)</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
+        <h2>Service Requests</h2>
 
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @item.ServiceRequest.ContractId
-                </td>
+        <a asp-action="Create" class="btn btn-primary">
+            + New Request
+        </a>
 
-                <td>
-                    @item.ServiceRequest.Description
-                </td>
+    </div>
 
-                <td>
-                    @item.ServiceRequest.Cost
-                </td>
+    <div class="card shadow p-3">
 
-                <td>
-                    @item.CostInZar.ToString("0.00")
-                </td>
+        <table class="table table-hover align-middle">
 
-                <td>
-                    @item.ServiceRequest.Status
-                </td>
+            <thead class="table-dark">
+                <tr>
+                    <th>Contract</th>
+                    <th>Description</th>
+                    <th>USD</th>
+                    <th>ZAR</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.ServiceRequest.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.ServiceRequest.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.ServiceRequest.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+
+                        <td>
+                            <span class="badge bg-secondary">
+                                #@item.ServiceRequest.ContractId
+                            </span>
+                        </td>
+
+                        <td>@item.ServiceRequest.Description</td>
+
+                        <td>$@item.ServiceRequest.Cost</td>
+
+                        <td>
+                            <strong>R @item.CostInZar.ToString("0.00")</strong>
+                        </td>
+
+                        <td>
+                            @if (item.ServiceRequest.Status == "Completed")
+                            {
+                                <span class="badge bg-success">Completed</span>
+                            }
+                            else if (item.ServiceRequest.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info text-dark">
+                                    @item.ServiceRequest.Status
+                                </span>
+                            }
+                        </td>
+
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.ServiceRequest.Id" class="btn btn-sm btn-warning">Edit</a>
+                            <a asp-action="Details" asp-route-id="@item.ServiceRequest.Id" class="btn btn-sm btn-info">View</a>
+                            <a asp-action="Delete" asp-route-id="@item.ServiceRequest.Id" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

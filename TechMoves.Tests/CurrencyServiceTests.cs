@@ -1,16 +1,32 @@
 ﻿using Xunit;
 using TechMoves.Services;
 using System.Net.Http;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using Moq;
+
 namespace TechMoves.Tests
 {
     public class CurrencyServiceTests
     {
+        private CurrencyService CreateService()
+        {
+            var httpClient = new HttpClient();
+
+            var logger = new Mock<ILogger<CurrencyService>>();
+            var config = new Mock<IConfiguration>();
+
+            return new CurrencyService(
+                httpClient,
+                logger.Object,
+                config.Object
+            );
+        }
+
         [Fact]
         public void ConvertUsdToZar_ShouldReturnCorrectValue()
         {
-            var service = new CurrencyService(new HttpClient());
+            var service = CreateService();
 
             decimal usd = 10;
             decimal rate = 18.5m;
@@ -23,7 +39,7 @@ namespace TechMoves.Tests
         [Fact]
         public void ConvertUsdToZar_ShouldReturnZero_WhenUsdIsZero()
         {
-            var service = new CurrencyService(new HttpClient());
+            var service = CreateService();
 
             var result = service.ConvertUsdToZar(0, 18.5m);
 
@@ -33,7 +49,7 @@ namespace TechMoves.Tests
         [Fact]
         public void ConvertUsdToZar_ShouldThrow_WhenNegative()
         {
-            var service = new CurrencyService(new HttpClient());
+            var service = CreateService();
 
             Assert.Throws<ArgumentException>(() =>
             {
