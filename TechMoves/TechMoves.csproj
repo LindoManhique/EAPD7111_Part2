@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove=".github\**" />
+    <Content Remove=".github\**" />
+    <EmbeddedResource Remove=".github\**" />
+    <None Remove=".github\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.27" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.26" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.26">
@@ -25,10 +32,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\uploads\contracts\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include=".github\workflows\dotnet-tests.yml" />
   </ItemGroup>
 
 </Project>
