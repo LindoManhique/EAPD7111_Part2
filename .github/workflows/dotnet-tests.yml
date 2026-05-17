@@ -18,14 +18,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Clear NuGet cache
-        run: dotnet nuget locals all --clear
-
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build project
         run: dotnet build --no-restore
 
-      - name: Run tests (stable mode)
-        run: dotnet test --no-build --verbosity normal --logger "trx"
+      - name: Run tests (safe mode)
+        run: dotnet test --no-build --verbosity normal --blame-hang-timeout 180000
