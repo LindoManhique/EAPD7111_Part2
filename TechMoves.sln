@@ -14,6 +14,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		dotnet-tests.yml = dotnet-tests.yml
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TechMoves.API", "TechMoves.API\TechMoves.API.csproj", "{EAF97497-D130-4AD4-84AE-7A547C361CCA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1BFB675A-E821-491F-A51D-DF46B6B060D6}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +35,10 @@ Global
 		{474ABBE3-AB70-49ED-914D-2583BC6FA422}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{474ABBE3-AB70-49ED-914D-2583BC6FA422}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{474ABBE3-AB70-49ED-914D-2583BC6FA422}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAF97497-D130-4AD4-84AE-7A547C361CCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAF97497-D130-4AD4-84AE-7A547C361CCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAF97497-D130-4AD4-84AE-7A547C361CCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAF97497-D130-4AD4-84AE-7A547C361CCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

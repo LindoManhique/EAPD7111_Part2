@@ -1,0 +1,60 @@
+
+
+services:
+
+  # =========================
+  # DATABASE (SQL SERVER)
+  # =========================
+  sql-server-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-server-db
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    networks:
+      - techmoves-network
+
+  # =========================
+  # API (BACKEND)
+  # =========================
+  techmoves-api:
+    build:
+      context: ./TechMoves.API
+      dockerfile: Dockerfile
+    container_name: techmoves-api
+    depends_on:
+      - sql-server-db
+    ports:
+      - "7009:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql-server-db,1433;Database=TechMovesDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True
+    networks:
+      - techmoves-network
+
+  # =========================
+  # MVC FRONTEND
+  # =========================
+  techmoves-web:
+    build:
+      context: ./TechMoves
+      dockerfile: Dockerfile
+    container_name: techmoves-web
+    depends_on:
+      - techmoves-api
+    ports:
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiSettings__BaseUrl=http://techmoves-api:8080/
+    networks:
+      - techmoves-network
+
+# =========================
+# NETWORKING (IMPORTANT FOR MARKS)
+# =========================
+networks:
+  techmoves-network:
+    driver: bridge

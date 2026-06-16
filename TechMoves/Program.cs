@@ -1,23 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TechMoves.Data;
-using TechMoves.Interfaces;
-using TechMoves.Services;
+﻿using TechMoves.Services;
+using TechMoves.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // MVC
 builder.Services.AddControllersWithViews();
 
-// DATABASE
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+// HTTP CLIENT (CONNECT TO API)
+builder.Services.AddHttpClient<ApiClientService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7009/");
+});
 
 // BUSINESS SERVICES 
 builder.Services.AddScoped<IContractService, ContractService>();
-
-// EXTERNAL API SERVICE 
-builder.Services.AddHttpClient<ICurrencyService, CurrencyService>();
 
 var app = builder.Build();
 

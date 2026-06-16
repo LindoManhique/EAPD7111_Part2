@@ -1,6 +1,6 @@
 ﻿using TechMoves.Models;
 
-namespace TechMoves.Interfaces
+namespace TechMoves.Services.Interfaces
 {
     public interface IContractService
     {

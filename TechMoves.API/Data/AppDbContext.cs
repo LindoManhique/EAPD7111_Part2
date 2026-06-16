@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TechMoves.Models;
+using TechMoves.API.Models;
 
 namespace TechMoves.API.Data
 {

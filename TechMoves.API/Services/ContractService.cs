@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using TechMoves.Models;
-using TechMoves.Services.Interfaces;
+using TechMoves.API.Models;
+using TechMoves.API.Services.Interfaces;
 
-namespace TechMoves.Services
+namespace TechMoves.API.Services
 {
     public class ContractService : IContractService
     {
